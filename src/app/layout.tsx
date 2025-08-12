@@ -6,7 +6,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeToggle } from "@/components/mode-toogle";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Carousel } from "@/components/ui/carousel";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
