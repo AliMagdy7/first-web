@@ -1,6 +1,8 @@
 "use client"
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
+
 export function TeamSwitcher({
   teams,
 }: {
@@ -12,6 +14,7 @@ export function TeamSwitcher({
 }) {
   const { isMobile } = useSidebar()
   const [activeTeam] = React.useState(teams[0])
+  const router = useRouter()
 
   if (!activeTeam) {
     return null
@@ -22,7 +25,8 @@ export function TeamSwitcher({
       <SidebarMenuItem>
         <SidebarMenuButton
           size="lg"
-          className="cursor-default bg-sidebar-accent text-sidebar-accent-foreground"
+          className="cursor-pointer bg-sidebar-accent text-sidebar-accent-foreground"
+          onClick={() => router.push("/")}
         >
           <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
             <activeTeam.logo className="size-4" />
