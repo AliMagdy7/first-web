@@ -94,6 +94,7 @@ export default function Profile() {
   const [showVerificationInput, setShowVerificationInput] = useState(false)
   const [verificationCode, setVerificationCode] = useState("")
   const [emailVerified, setEmailVerified] = useState(true)
+  const [confirmSave, setConfirmSave] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { open, isMobile } = useSidebar()
@@ -127,9 +128,8 @@ export default function Profile() {
   const handleInputChange = (field: keyof typeof editedUser, value: string | boolean) =>
     setEditedUser((prev) => ({ ...prev, [field]: value }))
 
-  const handleSave = async () => {
+  const validateForm = () => {
     const newErrors: typeof errors = {}
-
     userFields.forEach(({ field, label }) => {
       if (editMode && field !== "id") {
         const val = editedUser[field as keyof typeof editedUser]?.toString().trim()
@@ -138,7 +138,6 @@ export default function Profile() {
         }
       }
     })
-
     if (editMode && editedUser.email) {
       const emailVal = editedUser.email.trim()
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
@@ -149,12 +148,12 @@ export default function Profile() {
         newErrors.email = "You must verify your email before saving"
       }
     }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
-    }
-
+  const handleSave = async () => {
+    if (!validateForm()) return
     setSaving(true)
     try {
       Object.keys(editedUser).forEach((key) => {
@@ -238,7 +237,6 @@ export default function Profile() {
               <div className={`h-32 w-32 rounded-full overflow-hidden ring-2 ring-gray-300 dark:ring-gray-600 ${editMode ? "cursor-pointer" : "cursor-default"}`} onClick={editMode ? handleButtonClick : undefined}>
                 <Image src={tempAvatar} alt={user.name} width={128} height={128} className="object-cover w-full h-full" />
               </div>
-
               {editMode && (
                 <div className="absolute bottom-1 right-1 group">
                   <button onClick={handleButtonClick} className="bg-white dark:bg-black border border-gray-300 dark:border-gray-600 p-1 rounded-full shadow hover:bg-gray-100 dark:hover:bg-gray-900 active:scale-95 cursor-pointer relative">
@@ -323,7 +321,21 @@ export default function Profile() {
               {editMode ? (
                 <>
                   <Button onClick={handleCancel} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-red-600 dark:hover:bg-red-600 hover:text-white">Cancel</Button>
-                  <Button onClick={handleSave} disabled={saving} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-green-600 dark:hover:bg-green-600 hover:text-white">{saving ? "Saving..." : "Save"}</Button>
+                  <AlertDialog open={confirmSave} onOpenChange={setConfirmSave}>
+                    <AlertDialogTrigger asChild>
+                      <Button disabled={saving} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-green-600 dark:hover:bg-green-600 hover:text-white">{saving ? "Saving..." : "Save"}</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Save</AlertDialogTitle>
+                        <AlertDialogDescription>Are you sure you want to save these changes?</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel autoFocus onClick={handleCancel} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-red-600 dark:hover:bg-red-600 hover:text-white">Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSave} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-green-600 dark:hover:bg-green-600 hover:text-white">Confirm</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </>
               ) : (
                 <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
