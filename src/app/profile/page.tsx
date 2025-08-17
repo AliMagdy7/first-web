@@ -95,6 +95,7 @@ export default function Profile() {
   const [verificationCode, setVerificationCode] = useState("")
   const [emailVerified, setEmailVerified] = useState(true)
   const [confirmSave, setConfirmSave] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { open, isMobile } = useSidebar()
@@ -119,6 +120,11 @@ export default function Profile() {
     setEmailVerified((editedUser.email || "") === (user.email || ""))
   }, [editedUser.email, user.email])
 
+  useEffect(() => {
+    const changed = JSON.stringify({ ...user, subscribed: user.subscribed ?? true, avatar: user.avatar }) !== JSON.stringify({ ...editedUser, avatar: tempAvatar })
+    setHasChanges(changed)
+  }, [editedUser, tempAvatar, user])
+
   const handleButtonClick = () => fileInputRef.current?.click()
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -140,11 +146,7 @@ export default function Profile() {
     })
     if (editMode && editedUser.email) {
       const emailVal = editedUser.email.trim()
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
-        newErrors.email = "Invalid email format"
-      } else if (/[ء-ي]/.test(emailVal)) {
-        newErrors.email = "Email cannot contain Arabic characters"
-      } else if (emailVal !== (user.email || "").trim() && !emailVerified) {
+      if (emailVal !== (user.email || "").trim() && !emailVerified) {
         newErrors.email = "You must verify your email before saving"
       }
     }
@@ -186,8 +188,19 @@ export default function Profile() {
   }
 
   const handleVerifyEmail = async () => {
+    const newErrors: typeof errors = {}
     if ((editedUser.email || "").trim() === (user.email || "").trim()) {
-      setErrors(prev => ({ ...prev, email: "Email has not been changed" }))
+      newErrors.email = "Email has not been changed"
+    } else {
+      const emailVal = editedUser.email.trim()
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+        newErrors.email = "Invalid email format"
+      } else if (/[ء-ي]/.test(emailVal)) {
+        newErrors.email = "Email cannot contain Arabic characters"
+      }
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...newErrors }))
       return
     }
     setVerifying(true)
@@ -323,7 +336,9 @@ export default function Profile() {
                   <Button onClick={handleCancel} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-red-600 dark:hover:bg-red-600 hover:text-white">Cancel</Button>
                   <AlertDialog open={confirmSave} onOpenChange={setConfirmSave}>
                     <AlertDialogTrigger asChild>
-                      <Button disabled={saving} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-green-600 dark:hover:bg-green-600 hover:text-white">{saving ? "Saving..." : "Save"}</Button>
+                      <Button disabled={saving || !hasChanges} className={`bg-white text-black dark:bg-black dark:text-white border ${hasChanges ? "hover:bg-green-600 dark:hover:bg-green-600 hover:text-white" : "opacity-50 cursor-not-allowed"}`}>
+                        {saving ? "Saving..." : "Save"}
+                      </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
@@ -331,7 +346,7 @@ export default function Profile() {
                         <AlertDialogDescription>Are you sure you want to save these changes?</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel autoFocus onClick={handleCancel} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-red-600 dark:hover:bg-red-600 hover:text-white">Cancel</AlertDialogCancel>
+                        <AlertDialogCancel autoFocus className="bg-white text-black dark:bg-black dark:text-white border hover:bg-red-600 dark:hover:bg-red-600 hover:text-white">Cancel</AlertDialogCancel>
                         <AlertDialogAction onClick={handleSave} className="bg-white text-black dark:bg-black dark:text-white border hover:bg-green-600 dark:hover:bg-green-600 hover:text-white">Confirm</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
