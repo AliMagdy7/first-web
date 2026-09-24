@@ -143,7 +143,7 @@ function LoopingTyping({
 export default function Clinics() {
   return (
     <div className="relative w-screen h-screen bg-white dark:bg-black overflow-hidden">
-      <style jsx global>{`
+      <style>{`
         html,
         body {
           margin: 0;
