@@ -9,7 +9,7 @@ export type User = {
   role: string
   affiliation: string
   country: string
-  subscribed?: boolean // ← أضفنا الخاصية دي
+  subscribed?: boolean
 }
 
 type UserContextType = {
