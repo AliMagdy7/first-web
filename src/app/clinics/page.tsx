@@ -1,4 +1,5 @@
 "use client"
+
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import React, { useEffect, useId, useRef, useState } from "react"
@@ -7,21 +8,16 @@ import { TypingAnimation } from "@/components/magicui/typing-animation"
 interface DotPatternProps extends React.SVGProps<SVGSVGElement> {
   width?: number
   height?: number
-  x?: number
-  y?: number
   cx?: number
   cy?: number
   cr?: number
   className?: string
   glow?: boolean
-  [key: string]: unknown
 }
 
-export function DotPattern({
+function DotPattern({
   width = 16,
   height = 16,
-  x = 0,
-  y = 0,
   cx = 1,
   cy = 1,
   cr = 1,
@@ -36,12 +32,17 @@ export function DotPattern({
   useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect()
+        const { width, height } =
+          containerRef.current.getBoundingClientRect()
+
         setDimensions({ width, height })
       }
     }
+
     updateDimensions()
+
     window.addEventListener("resize", updateDimensions)
+
     return () => window.removeEventListener("resize", updateDimensions)
   }, [])
 
@@ -54,6 +55,7 @@ export function DotPattern({
     (_, i) => {
       const col = i % Math.ceil(dimensions.width / width)
       const row = Math.floor(i / Math.ceil(dimensions.width / width))
+
       return {
         x: col * width + cx,
         y: row * height + cy,
@@ -67,7 +69,10 @@ export function DotPattern({
     <svg
       ref={containerRef}
       aria-hidden="true"
-      className={cn("pointer-events-none fixed inset-0 h-full w-full z-0", className)}
+      className={cn(
+        "pointer-events-none fixed inset-0 h-full w-full z-0",
+        className
+      )}
       {...props}
     >
       <defs>
@@ -76,6 +81,7 @@ export function DotPattern({
           <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </radialGradient>
       </defs>
+
       {dots.map((dot) => (
         <motion.circle
           key={`${dot.x}-${dot.y}`}
@@ -110,14 +116,23 @@ export function DotPattern({
   )
 }
 
-function LoopingTyping({ text, ...props }: { text: string; [key: string]: any }) {
+function LoopingTyping({
+  text,
+  ...props
+}: {
+  text: string
+  className?: string
+}) {
   const [key, setKey] = useState(0)
+
   useEffect(() => {
     const interval = setInterval(() => {
       setKey((prev) => prev + 1)
     }, 2000)
+
     return () => clearInterval(interval)
   }, [])
+
   return (
     <TypingAnimation key={key} {...props}>
       {text}
@@ -129,7 +144,8 @@ export default function Clinics() {
   return (
     <div className="relative w-screen h-screen bg-white dark:bg-black overflow-hidden">
       <style jsx global>{`
-        html, body {
+        html,
+        body {
           margin: 0;
           padding: 0;
           overflow: hidden;
@@ -137,9 +153,12 @@ export default function Clinics() {
           height: 100%;
         }
       `}</style>
+
       <DotPattern glow={false} width={24} height={24} cr={2} />
+
       <main className="relative z-10 w-full h-full flex">
         <div className="w-[250px]"></div>
+
         <div className="flex-1 flex items-center">
           <div className="absolute left-[35%] top-[42%] sm:left-[33%] sm:top-[38%] md:left-[31%] md:top-[43%] lg:left-[29%] lg:top-[45%]">
             <LoopingTyping
